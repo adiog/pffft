@@ -11,14 +11,14 @@ endif()
 
 if(LINUX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
-  set(CMAKE_C_FLAGS_DEBUG "-g")
+  set(CMAKE_C_FLAGS_DEBUG "-g -O3")
   set(CMAKE_C_FLAGS_RELEASE "-O3")
 
   set(LIBRARIES m)
 
   if(HAVE_FFTW)
     add_definitions(-DHAVE_FFTW)
-    set(LIBRARIES "${LIBRARIES} fftw3f")
+    set(LIBRARIES "${LIBRARIES}" "fftw3f")
   endif()
 
   if(USE_SIMD)
@@ -29,11 +29,12 @@ if(LINUX)
 endif()
 
 if(APPLE)
-  #on macos, without fftw3:
-  #clang -o test_pffft -DHAVE_VECLIB -O3 -Wall -W pffft.c test_pffft.c fftpack.c -L/usr/local/lib -I/usr/local/include/ -framework Accelerate
-
-  #on macos, with fftw3:
-  #clang -o test_pffft -DHAVE_FFTW -DHAVE_VECLIB -O3 -Wall -W pffft.c test_pffft.c fftpack.c -L/usr/local/lib -I/usr/local/include/ -lfftw3f -framework Accelerate
+  add_definitions(-DHAVE_VECLIB)
+  if(HAVE_FFTW)
+    add_definitions(-DHAVE_FFTW)
+    set(LIBRARIES "${LIBRARIES}" "fftw3f")
+  endif()
+  set(LIBRARIES "${LIBRARIES}" "-framework Accelerate")
 endif()
 
 if(WIN32)
@@ -52,4 +53,3 @@ target_link_libraries(pffft ${LIBRARIES})
 
 add_executable(test_pffft ${CMAKE_CURRENT_SOURCE_DIR}/test_pffft.c)
 target_link_libraries(test_pffft pffft)
-
